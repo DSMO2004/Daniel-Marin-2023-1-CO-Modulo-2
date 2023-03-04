@@ -15,6 +15,8 @@ class Game:
         self.x_pos_bg = 0
         self.y_pos_bg = 380
         self.player=Dinosaur()
+        self.sounds=True
+
 
     def run(self):
         # Game loop: events - update - draw
@@ -23,6 +25,7 @@ class Game:
             self.events()
             self.update()
             self.draw()
+            self.music()
         pygame.quit()
 
     def events(self):
@@ -33,6 +36,15 @@ class Game:
     def update(self):
         user_input= pygame.key.get_pressed()
         self.player.update(user_input)
+    
+
+    def music(self):
+        if self.sounds== True:
+         pygame.mixer.music.load('dino_runner/assets/music/musicadefondo.mp3')
+         pygame.mixer.music.play(-1)
+         pygame.mixer.music.set_volume(0.3)
+        self.sounds= False
+     
 
     def draw(self):
         self.clock.tick(FPS)
@@ -50,3 +62,4 @@ class Game:
             self.screen.blit(BG, (image_width + self.x_pos_bg, self.y_pos_bg))
             self.x_pos_bg = 0
         self.x_pos_bg -= self.game_speed
+        
