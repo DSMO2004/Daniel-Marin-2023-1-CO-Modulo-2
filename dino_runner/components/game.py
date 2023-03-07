@@ -4,6 +4,7 @@ import random
 
 from dino_runner.utils.constants import BG, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS,ICON, CLOUD
 from dino_runner.components.dinosaur import Dinosaur
+from dino_runner.components.obstacles.obstacle_manager import ObstacleManager
 
 class Game:
     def __init__(self):
@@ -24,6 +25,8 @@ class Game:
         self.image_star=ICON
         self.image_cloud=CLOUD
         self.clouds = []
+        self.obstacle_manager = ObstacleManager()
+
         for i in range(3):
             self.clouds.append([random.randint(SCREEN_WIDTH,
              SCREEN_WIDTH + 100), random.randint(50, 200)])
@@ -48,7 +51,9 @@ class Game:
 
     def update(self):
         user_input= pygame.key.get_pressed()
+        
         self.player.update(user_input)
+        self.obstacle_manager.update(self)
         self.time_elapsed +=1
         if  1999 >= self.time_elapsed > 1000:
            self.game_speed=50
@@ -106,6 +111,7 @@ class Game:
             time_str = f"SCORE: {self.time_elapsed:012d}"
             time_surface = self.font.render(time_str, True, (0, 0, 0)) 
             self.screen.blit(time_surface, (850, 10))
+            self.obstacle_manager.draw(self.screen)
         elif self.color == False:
             self.screen.fill((0, 0, 0))
             self.draw_background()
@@ -113,6 +119,7 @@ class Game:
             time_str = f"SCORE: {self.time_elapsed:012d}"
             time_surface = self.font.render(time_str, True, (255, 255, 255)) 
             self.screen.blit(time_surface, (850, 10))
+            self.obstacle_manager.draw(self.screen)
         pygame.display.update()
 
     def draw_background(self):
