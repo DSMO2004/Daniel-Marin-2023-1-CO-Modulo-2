@@ -2,11 +2,12 @@ import pygame
 
 import random
 
-from dino_runner.utils.constants import BG, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS,ICON, CLOUD
+from dino_runner.utils.constants import BG, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS,ICON, CLOUD, FONT_STYLE
 from dino_runner.components.dinosaur import Dinosaur
 from dino_runner.components.obstacles.obstacle_manager import ObstacleManager
-
+from dino_runner.components.menu import Menu
 class Game:
+    GAME_SPEED = 20
     def __init__(self):
         pygame.init()
         pygame.display.set_caption(TITLE)
@@ -14,34 +15,45 @@ class Game:
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.playing = False
-        self.game_speed = 20
+        self.game_speed = self.GAME_SPEED
         self.x_pos_bg = 0
         self.y_pos_bg = 380
         self.player=Dinosaur()
         self.sounds=True
         self.font = pygame.font.Font(None, 30)
-        self.time_elapsed = 0
+        self.score = 0
         self.color= True
         self.image_star=ICON
         self.image_cloud=CLOUD
         self.clouds = []
         self.obstacle_manager = ObstacleManager()
+        self.menu = Menu(" Press any key to start...", self.screen)
+        self.running = False
+        self.death_count = 0
 
         for i in range(3):
             self.clouds.append([random.randint(SCREEN_WIDTH,
              SCREEN_WIDTH + 100), random.randint(50, 200)])
 
+    def execute(self):
+        self.running = True
+        while self.running:
+            if not self.playing:
+                self.show_menu()
+        pygame.display.quit()
+        pygame.quit()
 
 
     def run(self):
-        self.show_start_screen()
+        self.obstacle_manager.reset_obstacles()
+        self.game_speed = self.GAME_SPEED
+        self.score = 0
         self.playing = True
         while self.playing:
             self.events()
             self.update()
             self.draw()
             self.music()
-        pygame.quit()
 
 
     def events(self):
@@ -51,22 +63,9 @@ class Game:
 
     def update(self):
         user_input= pygame.key.get_pressed()
-        
         self.player.update(user_input)
         self.obstacle_manager.update(self)
-        self.time_elapsed +=1
-        if  1999 >= self.time_elapsed > 1000:
-           self.game_speed=50
-           self.color = False
-           print(self.color)
-        elif 2999 >= self.time_elapsed > 2000:
-           self.game_speed=75 
-           self.color = True
-           print(self.color)
-        elif self.time_elapsed > 3000:
-           self.game_speed=100 
-           self.color = False
-           print(self.color)
+        self.update_score()
     
 
     def music(self):
@@ -76,31 +75,6 @@ class Game:
          pygame.mixer.music.set_volume(0.3)
         self.sounds= False
      
-    def show_start_screen(self):
-        self.screen.fill((255, 255, 255))
-        start_image =self.image_star 
-        start_rect = start_image.get_rect()
-        start_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
-        self.screen.blit(start_image, start_rect)
-        font = pygame.font.Font(None, 30)
-        text_surface = font.render("Presione Enter para jugar", True, (0, 0, 0))
-        text_rect = text_surface.get_rect()
-        text_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50)
-        self.screen.blit(text_surface, text_rect)
-        pygame.display.update()
-        self.wait_for_key()
-
-    def wait_for_key(self):
-        waiting = True
-        while waiting:
-            self.clock.tick(FPS)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    waiting = False
-                    self.playing = False
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        waiting = False
 
     def draw(self):
         self.clock.tick(FPS)
@@ -108,18 +82,14 @@ class Game:
             self.screen.fill((255, 255, 255))
             self.draw_background()
             self.player.draw(self.screen)
-            time_str = f"SCORE: {self.time_elapsed:012d}"
-            time_surface = self.font.render(time_str, True, (0, 0, 0)) 
-            self.screen.blit(time_surface, (850, 10))
             self.obstacle_manager.draw(self.screen)
+            self.draw_score()
         elif self.color == False:
             self.screen.fill((0, 0, 0))
             self.draw_background()
             self.player.draw(self.screen)
-            time_str = f"SCORE: {self.time_elapsed:012d}"
-            time_surface = self.font.render(time_str, True, (255, 255, 255)) 
-            self.screen.blit(time_surface, (850, 10))
             self.obstacle_manager.draw(self.screen)
+            self.draw_score()
         pygame.display.update()
 
     def draw_background(self):
@@ -141,4 +111,45 @@ class Game:
     
         if len(self.clouds) < 3:
            self.clouds.append([SCREEN_WIDTH, random.randint(50, 200)])
+
+    def show_menu(self):
+        self.menu.reset_screen_color(self.screen)
+
+        half_screen_width = SCREEN_WIDTH // 2
+        half_screen_heigth = SCREEN_HEIGHT // 2
+
+        if self.death_count == 0:
+           self.menu.draw(self.screen)
+        else:
+            self.menu.update_message(" DEADS: ")
+            self.menu.draw(self.screen)
+
+        self.menu.draw(self.screen)
+
+        self.screen.blit(ICON, (half_screen_width - 50, half_screen_heigth))
+
+        self.menu.update(self)
+
+    def update_score(self):
+        self.score += 1
+
+        if self.score % 100 == 0 and self.game_speed< 500:
+            self.game_speed += 5
+            
+            if  999 >= self.score > 500:
+              self.color = False
+              print(self.color)
+            elif 1499 >= self.score > 1000:
+              self.color = True
+              print(self.color)
+            elif self.score > 1500:
+              self.color = False
+              print(self.color)
+
+    def draw_score(self):
+        font = pygame.font.Font(FONT_STYLE, 30)
+        text = font.render(f'Score: {self.score:012d}', True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (900, 50)
+        self.screen.blit(text, text_rect)
 

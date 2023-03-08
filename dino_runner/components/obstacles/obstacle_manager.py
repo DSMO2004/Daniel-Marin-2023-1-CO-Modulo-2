@@ -3,48 +3,43 @@ import random
 
 from dino_runner.components.obstacles.cactus import Cactus
 from dino_runner.components.obstacles.bird import Bird
-from dino_runner.utils.constants import SMALL_CACTUS, LARGE_CACTUS, BIRD
+
+from dino_runner.utils.constants import SMALL_CACTUS
+
 
 class ObstacleManager:
-    def __init__(self):
-        self.obstacles = []
-        self.bird_heights = ["high", "middle", "low"]
-        self.bird_size=BIRD[0]
-        self.step_index=0
+  def __init__(self):
+    self.obstacles = []
 
-    def update(self, game):
-        
-        if len(self.obstacles) == 0:
-            obstacle_type = random.choice(["cactus", "bird"])
+  def generate_obstacle(self, obstacle_type):
+    if obstacle_type == 0:
+      cactus_type = 'SMALL'
+      obstacle = Cactus(cactus_type)
+    elif obstacle_type == 1:
+      cactus_type = 'LARGE'
+      obstacle = Cactus(cactus_type)
+    else:
+      obstacle = Bird()
+    return obstacle
 
-            if obstacle_type == "cactus":
-                 cactus_size = random.choice([SMALL_CACTUS, LARGE_CACTUS])
+  def update(self, game):
+    if len(self.obstacles) == 0:
+      obstacle_type = random.randint(0, 2)
+      obstacle = self.generate_obstacle(obstacle_type)
+      self.obstacles.append(obstacle)
 
-                 if cactus_size == LARGE_CACTUS:
-                    cactus = Cactus(cactus_size, y=300)
-                 else:
-                  cactus = Cactus(cactus_size)
+    for obstacle in self.obstacles:
+      obstacle.update(game.game_speed, self.obstacles)
 
-                 self.obstacles.append(cactus)
-            else:
-                if self.bird_size==BIRD[0] and self.step_index<5:
-                     bird = Bird(random.choice(self.bird_heights), BIRD[0])
-                     self.obstacles.append(bird)
-                     self.step_index += 1
-                else: 
-                    bird = Bird(random.choice(self.bird_heights),BIRD[1])
-                    self.obstacles.append(bird)
-                    self.step_index += 1
-                if self.step_index >= 10:
-                  self.step_index = 0
-           
+      if game.player.dino_rect.colliderect(obstacle.rect):
+        pygame.time.delay(1000)
+        game.death_count +=1
+        game.playing = False
+        break
 
-        for obstacle in self.obstacles:
-            obstacle.update(game.game_speed, self.obstacles)
+  def draw(self, screen):
+    for obstacle in self.obstacles:
+      obstacle.draw(screen)
 
-            if game.player.dino_rect.colliderect(obstacle.rect):
-                game.playing= False
-
-    def draw(self, screen):
-        for obstacle in self.obstacles:
-            obstacle.draw(screen)
+  def reset_obstacles(self):
+    self.obstacles = []
