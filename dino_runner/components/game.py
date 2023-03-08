@@ -135,28 +135,29 @@ class Game:
 
         self.screen.blit(ICON, (half_screen_width - 30, half_screen_heigth - 150))
         self.sounds = True
+        self.color = True
 
         self.menu.update(self)
 
 
     def update_score(self):
         self.score += 1
-        if self.score > self.max_score:
-            self.max_score = self.score
-
-            if self.score % 100 == 0 and self.game_speed< 500:
-               self.game_speed += 5
-               print(self.score)
+        if self.score % 100 == 0 and self.game_speed< 500:
+            self.game_speed += 5
+            print("xx",self.game_speed)
+            print("x",self.score)
             
-               if  999 >= self.score >= 500:
+        if  999 >= self.score >= 500:
                   self.color = False
                   print(self.color)
-               elif 1499 >= self.score >= 1000:
+        elif 1499 >= self.score >= 1000:
                     self.color = True
                     print(self.color)
-               elif self.score > 1500:
+        elif self.score > 1500:
                     self.color = False
                     print(self.color)
+        if self.score > self.max_score:
+            self.max_score = self.score
 
     def draw_score(self):
         font = pygame.font.Font(FONT_STYLE, 30)
