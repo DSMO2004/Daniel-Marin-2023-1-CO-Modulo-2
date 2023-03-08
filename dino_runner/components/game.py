@@ -30,6 +30,7 @@ class Game:
         self.menu = Menu(" Press any key to start...", self.screen)
         self.running = False
         self.death_count = 0
+        self.max_score = 0
 
         for i in range(3):
             self.clouds.append([random.randint(SCREEN_WIDTH,
@@ -72,7 +73,7 @@ class Game:
         if self.sounds == True:
          pygame.mixer.music.load('dino_runner/assets/music/musicadefondo.mp3')
          pygame.mixer.music.play(-1)
-         pygame.mixer.music.set_volume(0.3)
+         pygame.mixer.music.set_volume(0.01)
         self.sounds= False
      
 
@@ -113,6 +114,7 @@ class Game:
            self.clouds.append([SCREEN_WIDTH, random.randint(50, 200)])
 
     def show_menu(self):
+        pygame.mixer.music.stop()
         self.menu.reset_screen_color(self.screen)
 
         half_screen_width = SCREEN_WIDTH // 2
@@ -121,35 +123,51 @@ class Game:
         if self.death_count == 0:
            self.menu.draw(self.screen)
         else:
-            self.menu.update_message(" DEADS: ")
+            self.menu.update_message(" DEADS: ", self.death_count)
             self.menu.draw(self.screen)
+
+        if self.score > 0:
+           self.menu.update_message_2(" SCORE: ", self.score)
+           self.menu.draw(self.screen)
+           self.menu.update_message_3 (" SCORE MAX: ", self.max_score)
 
         self.menu.draw(self.screen)
 
-        self.screen.blit(ICON, (half_screen_width - 50, half_screen_heigth))
+        self.screen.blit(ICON, (half_screen_width - 30, half_screen_heigth - 150))
+        self.sounds = True
 
         self.menu.update(self)
 
+
     def update_score(self):
         self.score += 1
+        if self.score > self.max_score:
+            self.max_score = self.score
 
-        if self.score % 100 == 0 and self.game_speed< 500:
-            self.game_speed += 5
+            if self.score % 100 == 0 and self.game_speed< 500:
+               self.game_speed += 5
+               print(self.score)
             
-            if  999 >= self.score > 500:
-              self.color = False
-              print(self.color)
-            elif 1499 >= self.score > 1000:
-              self.color = True
-              print(self.color)
-            elif self.score > 1500:
-              self.color = False
-              print(self.color)
+               if  999 >= self.score >= 500:
+                  self.color = False
+                  print(self.color)
+               elif 1499 >= self.score >= 1000:
+                    self.color = True
+                    print(self.color)
+               elif self.score > 1500:
+                    self.color = False
+                    print(self.color)
 
     def draw_score(self):
         font = pygame.font.Font(FONT_STYLE, 30)
-        text = font.render(f'Score: {self.score:012d}', True, (0, 0, 0))
-        text_rect = text.get_rect()
-        text_rect.center = (900, 50)
-        self.screen.blit(text, text_rect)
+        if self.color == True:
+           text = font.render(f'Score: {self.score:012d}', True, (0, 0, 0))
+           text_rect = text.get_rect()
+           text_rect.center = (900, 50)
+           self.screen.blit(text, text_rect)
+        else:
+            text = font.render(f'Score: {self.score:012d}', True, (255, 255, 255))
+            text_rect = text.get_rect()
+            text_rect.center = (900, 50)
+            self.screen.blit(text, text_rect)
 
