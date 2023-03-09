@@ -2,10 +2,11 @@ import pygame
 
 import random
 
-from dino_runner.utils.constants import BG, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS,ICON, CLOUD, FONT_STYLE
+from dino_runner.utils.constants import BG, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS,ICON, CLOUD, FONT_STYLE, DEFAULT_TYPE
 from dino_runner.components.dinosaur import Dinosaur
 from dino_runner.components.obstacles.obstacle_manager import ObstacleManager
 from dino_runner.components.menu import Menu
+from dino_runner.components.power_ups.power_up_manager import PowerUpManager
 class Game:
     GAME_SPEED = 20
     def __init__(self):
@@ -31,6 +32,7 @@ class Game:
         self.running = False
         self.death_count = 0
         self.max_score = 0
+        self.power_up_manager = PowerUpManager()
 
         for i in range(3):
             self.clouds.append([random.randint(SCREEN_WIDTH,
@@ -66,6 +68,7 @@ class Game:
         user_input= pygame.key.get_pressed()
         self.player.update(user_input)
         self.obstacle_manager.update(self)
+        self.power_up_manager.update(self)
         self.update_score()
     
 
@@ -73,7 +76,7 @@ class Game:
         if self.sounds == True:
          pygame.mixer.music.load('dino_runner/assets/music/musicadefondo.mp3')
          pygame.mixer.music.play(-1)
-         pygame.mixer.music.set_volume(0.01)
+         pygame.mixer.music.set_volume(0.015)
         self.sounds= False
      
 
@@ -84,12 +87,16 @@ class Game:
             self.draw_background()
             self.player.draw(self.screen)
             self.obstacle_manager.draw(self.screen)
+            self.power_up_manager.draw(self.screen)
+            self.draw_power_up_time()
             self.draw_score()
         elif self.color == False:
             self.screen.fill((0, 0, 0))
             self.draw_background()
             self.player.draw(self.screen)
             self.obstacle_manager.draw(self.screen)
+            self.power_up_manager.draw(self.screen)
+            self.draw_power_up_time()
             self.draw_score()
         pygame.display.update()
 
@@ -130,8 +137,7 @@ class Game:
            self.menu.update_message_2(" SCORE: ", self.score)
            self.menu.draw(self.screen)
            self.menu.update_message_3 (" SCORE MAX: ", self.max_score)
-
-        self.menu.draw(self.screen)
+           self.menu.draw(self.screen)
 
         self.screen.blit(ICON, (half_screen_width - 30, half_screen_heigth - 150))
         self.sounds = True
@@ -144,8 +150,6 @@ class Game:
         self.score += 1
         if self.score % 100 == 0 and self.game_speed< 500:
             self.game_speed += 5
-            print("xx",self.game_speed)
-            print("x",self.score)
             
         if  999 >= self.score >= 500:
                   self.color = False
@@ -171,4 +175,14 @@ class Game:
             text_rect = text.get_rect()
             text_rect.center = (900, 50)
             self.screen.blit(text, text_rect)
+
+    def draw_power_up_time(self):
+        if self.player.has_power_up:
+            time_to_show = round ((self.player.power_time_up - pygame.time.get_ticks())/1000, 2)
+
+            if time_to_show >= 0:
+                self.menu.update_time(f'{self.player.type.capitalize()} enabled for {time_to_show} seconds')
+            else:
+                self.has_power_up = False
+                self.player.type = DEFAULT_TYPE
 

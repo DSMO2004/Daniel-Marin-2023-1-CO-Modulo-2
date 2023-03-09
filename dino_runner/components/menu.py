@@ -15,6 +15,7 @@ class Menu:
         self.text_rect.center = (self.half_screen_width, self.half_screen_height)
         self.text_2 = None
         self.text_4 = None
+        self.text_time = None
 
 
      def update(self,game):
@@ -73,6 +74,15 @@ class Menu:
        self.text_5 = self. font.render(str(points_2), True, (0,0,0))
        self.text_rect_5= self.text_5.get_rect()
        self.text_rect_5.center = (self.half_screen_width + 120, self.half_screen_height + 100)
+
+     def  update_time(self, message):
+       self.menu_end = True
+       self.text_time = self.font.render(message, True, (0,0,0))
+       self.text_time_rect = self.text_time.get_rect()
+       self.text_time_rect.center = (self.half_screen_width, self.half_screen_height - 200)
+     def draw_1(self,screen):
+      if self.text_time:
+         screen.blit(self.text_time,self.text_time_rect)
        
 
              
