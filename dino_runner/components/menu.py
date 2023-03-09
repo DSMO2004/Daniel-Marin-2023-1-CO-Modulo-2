@@ -75,14 +75,12 @@ class Menu:
        self.text_rect_5= self.text_5.get_rect()
        self.text_rect_5.center = (self.half_screen_width + 120, self.half_screen_height + 100)
 
-     def  update_time(self, message):
-       self.menu_end = True
-       self.text_time = self.font.render(message, True, (0,0,0))
-       self.text_time_rect = self.text_time.get_rect()
-       self.text_time_rect.center = (self.half_screen_width, self.half_screen_height - 200)
-     def draw_1(self,screen):
-      if self.text_time:
-         screen.blit(self.text_time,self.text_time_rect)
+     def draw_1(self, screen, message, x=SCREEN_HEIGHT, y=SCREEN_WIDTH):
+       text_time = self.font.render(message, True, (255, 0, 0))
+       text_rect_time = text_time.get_rect()
+       text_rect_time.center = (x, y)
+       screen.blit(text_time, text_rect_time)
+
        
 
              

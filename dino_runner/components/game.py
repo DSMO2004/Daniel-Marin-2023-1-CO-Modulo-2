@@ -7,6 +7,7 @@ from dino_runner.components.dinosaur import Dinosaur
 from dino_runner.components.obstacles.obstacle_manager import ObstacleManager
 from dino_runner.components.menu import Menu
 from dino_runner.components.power_ups.power_up_manager import PowerUpManager
+from dino_runner.components.power_ups.projectile import Projectile
 class Game:
     GAME_SPEED = 20
     def __init__(self):
@@ -33,6 +34,8 @@ class Game:
         self.death_count = 0
         self.max_score = 0
         self.power_up_manager = PowerUpManager()
+        self.projectile = Projectile()
+        self.projectile_rect = self.projectile.rect
 
         for i in range(3):
             self.clouds.append([random.randint(SCREEN_WIDTH,
@@ -67,6 +70,8 @@ class Game:
     def update(self):
         user_input= pygame.key.get_pressed()
         self.player.update(user_input)
+        self.projectile.update(user_input)
+        self.projectile_rect = self.projectile.rect
         self.obstacle_manager.update(self)
         self.power_up_manager.update(self)
         self.update_score()
@@ -90,6 +95,9 @@ class Game:
             self.power_up_manager.draw(self.screen)
             self.draw_power_up_time()
             self.draw_score()
+            if self.projectile.hammer == True:
+                 self.projectile.draw(self.screen)
+                 self.projectile.hammer = False
         elif self.color == False:
             self.screen.fill((0, 0, 0))
             self.draw_background()
@@ -98,6 +106,9 @@ class Game:
             self.power_up_manager.draw(self.screen)
             self.draw_power_up_time()
             self.draw_score()
+            if self.projectile.hammer == True:
+                 self.projectile.draw(self.screen)
+                 self.projectile.hammer = False
         pygame.display.update()
 
     def draw_background(self):
@@ -142,6 +153,8 @@ class Game:
         self.screen.blit(ICON, (half_screen_width - 30, half_screen_heigth - 150))
         self.sounds = True
         self.color = True
+        self.player.reset()
+
 
         self.menu.update(self)
 
@@ -149,7 +162,7 @@ class Game:
     def update_score(self):
         self.score += 1
         if self.score % 100 == 0 and self.game_speed< 500:
-            self.game_speed += 5
+            self.game_speed += 2
             
         if  999 >= self.score >= 500:
                   self.color = False
@@ -181,7 +194,7 @@ class Game:
             time_to_show = round ((self.player.power_time_up - pygame.time.get_ticks())/1000, 2)
 
             if time_to_show >= 0:
-                self.menu.update_time(f'{self.player.type.capitalize()} enabled for {time_to_show} seconds')
+                self.menu.draw_1(self.screen,f'{self.player.type} enabled for {time_to_show} seconds', 300, 50)
             else:
                 self.has_power_up = False
                 self.player.type = DEFAULT_TYPE
